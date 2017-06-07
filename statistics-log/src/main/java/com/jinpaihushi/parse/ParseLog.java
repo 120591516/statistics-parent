@@ -38,7 +38,6 @@ public class ParseLog {
             factory = new SqlSessionFactoryBuilder().build(reader);
         }
         catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -46,9 +45,6 @@ public class ParseLog {
     private static String baseUrlPrefix = "/ComeIn?m=setOneProductNew&";// 微信服务号平台
 
     private static String wxNurse114UrlPrefix = "/wxNurse114";// 微信114生活助手
-    // private static String APPLYSTRING = "写过的新闻";
-    // private static String SEARCHSTRING = "正在搜索新闻：";
-    // private static String USERTAG = "用户：";
 
     /**
      * 用戶名，用戶行為，以key-value方式存储 用户行为 以json方式存储
