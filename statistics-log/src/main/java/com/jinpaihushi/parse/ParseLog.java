@@ -211,6 +211,8 @@ public class ParseLog {
             // 将数据插入到数据库
             openSession.insert("com.jinpaihushi.mapper.AccesslogMapper.insert", accesslog1);
         }
+        openSession.commit();
+        openSession.close();
     }
 
     public static void main(String[] args) throws Exception {
