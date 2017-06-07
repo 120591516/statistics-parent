@@ -68,8 +68,6 @@ public class ParseLog {
         // 文件路径
         // String filePath = "";
         String fileName = "D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log";
-        // 定义最终解析完纯净数据的集合
-        List<Accesslog> logList = new ArrayList<>();
         File file = new File(fileName);
         BufferedReader reader = null;
         try {
@@ -95,8 +93,9 @@ public class ParseLog {
                     int ipindex = tempString.indexOf("-");
                     String ipaddress = tempString.substring(0, ipindex - 1);
                     // 获取产品地址
-                    int urlindex = tempString.indexOf(baseUrlPrefix);
-                    String urladdress = tempString.substring(urlindex, urlindex + baseUrlPrefix.length() + 6);
+                    int urlStart = tempString.indexOf(baseUrlPrefix);
+                    int urlEnd = tempString.indexOf("HTTP");
+                    String urladdress = tempString.substring(urlStart, urlEnd);
                     //访问的商品的id有两位、三位，统一按三位截取，然后两位的去前后空格
                     urladdress = urladdress.trim();
                     System.out.println(Arrays.toString(urladdress.toCharArray()));
@@ -117,8 +116,9 @@ public class ParseLog {
                 }
             }
             reader.close();
-            extracted(logList, wxList, yesterday);
-            extracted(logList, wxNurse114List, yesterday);
+            extracted(wxList, yesterday);
+            extracted(wxNurse114List, yesterday);
+
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -134,8 +134,9 @@ public class ParseLog {
         }
     }
 
-    private static void extracted(List<Accesslog> logList, List<AccesslogSpread> list, String dayTime)
+    private static void extracted(List<AccesslogSpread> list, String dayTime)
             throws ParseException, IllegalAccessException, InvocationTargetException {
+        List<Accesslog> logList = new ArrayList<>();
         SqlSession openSession = factory.openSession();
         List<AccesslogSpread> allProduct = new ArrayList<>(list);
         // 获取所有访问商品列表
@@ -210,8 +211,6 @@ public class ParseLog {
             // 将数据插入到数据库
             openSession.insert("com.jinpaihushi.mapper.AccesslogMapper.insert", accesslog1);
         }
-        openSession.commit();
-        openSession.close();
     }
 
     public static void main(String[] args) throws Exception {
