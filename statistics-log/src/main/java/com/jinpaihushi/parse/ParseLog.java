@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -46,11 +47,6 @@ public class ParseLog {
 
     private static String wxNurse114UrlPrefix = "/wxNurse114";// 微信114生活助手
 
-    /**
-     * 用戶名，用戶行為，以key-value方式存储 用户行为 以json方式存储
-     * 
-     * @throws Exception
-     */
     private static SimpleDateFormat dayFormat = new SimpleDateFormat("yyyyMMdd");
 
     private static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
@@ -100,7 +96,10 @@ public class ParseLog {
                     String ipaddress = tempString.substring(0, ipindex - 1);
                     // 获取产品地址
                     int urlindex = tempString.indexOf(baseUrlPrefix);
-                    String urladdress = tempString.substring(urlindex, urlindex + baseUrlPrefix.length() + 5);
+                    String urladdress = tempString.substring(urlindex, urlindex + baseUrlPrefix.length() + 6);
+                    //访问的商品的id有两位、三位，统一按三位截取，然后两位的去前后空格
+                    urladdress = urladdress.trim();
+                    System.out.println(Arrays.toString(urladdress.toCharArray()));
                     al.setAccesstime(dayFormat.parse(yesterday));
                     al.setIp(ipaddress);
                     al.setStarttime(timeFormat.parse(startTime));
