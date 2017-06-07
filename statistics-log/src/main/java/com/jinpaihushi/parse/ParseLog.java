@@ -10,7 +10,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -98,7 +97,6 @@ public class ParseLog {
                     String urladdress = tempString.substring(urlStart, urlEnd);
                     //访问的商品的id有两位、三位，统一按三位截取，然后两位的去前后空格
                     urladdress = urladdress.trim();
-                    System.out.println(Arrays.toString(urladdress.toCharArray()));
                     al.setAccesstime(dayFormat.parse(yesterday));
                     al.setIp(ipaddress);
                     al.setStarttime(timeFormat.parse(startTime));
