@@ -229,23 +229,22 @@ public class ParseLog {
 
     public static void main(String[] args) {
         String fileName = "D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log";
-        List<Accesslog> logList = new ArrayList<>();
-        File file = new File(fileName);
-        BufferedReader reader = null;
         try {
-            FileReader fileReader = new FileReader(fileName);
-            System.out.println("以行为单位读取文件内容，一次读一整行：");
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "UTF-8");
-            reader = new BufferedReader(isr);
-            String tempString = null;
-            List<AccesslogSpread> list = new ArrayList<AccesslogSpread>();
-            AccesslogSpread al = null;
-            String dayTime = fileName.substring(fileName.length() - 12, fileName.length() - 4);
-            System.out.println("当前时间：" + dayTime);
-            System.out.println(dayFormat.parse(dayTime));
-
-            LineNumberReader l = new LineNumberReader(fileReader);
-            System.out.println(l.getLineNumber());
+            List<String> tempString = new ArrayList<String>();
+            long count = 0;
+            int num = 300;
+            while (true) {
+                List<String> readLine = new ParseLog().readLineB(fileName, num, count);
+                System.out.println(readLine.size());
+                count = Long.parseLong(readLine.get(readLine.size() - 1));
+                if (!readLine.isEmpty()) {
+                    readLine.remove(readLine.size() - 1);
+                    tempString.addAll(readLine);
+                }
+                else {
+                    break;
+                }
+            }
         }
         catch (Exception e) {
 
@@ -306,6 +305,39 @@ public class ParseLog {
                     }
                 }
                 if (num == list.size()) {
+                    break;
+                }
+            }
+            reader.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<String> readLineB(String fileName, int num, long count) {
+
+        String dayTime = fileName.substring(fileName.length() - 12, fileName.length() - 4);
+        List<String> list = new ArrayList<>();
+        LineNumberReader reader = null;
+        AccesslogSpread al = null;
+        try {
+            FileReader fileReader = new FileReader(fileName);
+            reader = new LineNumberReader(fileReader);
+            if (count > 0) {
+                reader.skip(count);
+                reader.setLineNumber(num);
+            }
+            while (true) {
+
+                String tempString = reader.readLine();
+                count += tempString.length() + 1;
+                if (StringUtils.isNotEmpty(tempString)) {
+                    list.add(tempString);
+                }
+                if (num == list.size()) {
+                    list.add(count + "");
                     break;
                 }
             }
