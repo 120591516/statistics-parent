@@ -3,8 +3,11 @@ package com.jinpaihushi.parse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
@@ -13,10 +16,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -59,6 +64,7 @@ public class ParseLog {
      * @throws Exception
      */
     public static void readFileByLines() {
+        //读取文件每次读取文件的1/10
         // 先获取未解析日志时间
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -1);
@@ -70,6 +76,13 @@ public class ParseLog {
         File file = new File(fileName);
         BufferedReader reader = null;
         try {
+            //定义文件的第一次读取到的大小
+            RandomAccessFile randomFile = new RandomAccessFile(file, "r");
+            randomFile.seek(file.length() / 10);
+            String tmp = null;
+            while ((tmp = randomFile.readLine()) != null) {
+                System.out.println(tmp);
+            }
             // 以行为单位读取文件内容，一次读一整行
             InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "UTF-8");
             reader = new BufferedReader(isr);
@@ -82,6 +95,7 @@ public class ParseLog {
             while ((tempString = reader.readLine()) != null) {
                 // 获取访问时间的小时数
                 // 获取当前访问时间的时分秒
+                Stream<String> lines = reader.lines();
                 if (tempString.contains(baseUrlPrefix)) {
                     al = new AccesslogSpread();
                     int timeIndex = tempString.indexOf(":");
@@ -213,16 +227,93 @@ public class ParseLog {
         openSession.close();
     }
 
-    public static void main(String[] args) throws Exception {
-        Calendar cal = Calendar.getInstance();
-        // System.out.println(Calendar.DATE);//5
-        cal.add(Calendar.DATE, -1);
-        Date time = cal.getTime();
-        String yesterday = dayFormat.format(time);
-        System.out.println(System.getProperty("user.dir"));
-        System.out.println("\\src\\access_" + yesterday + ".log");
-        // ParseLog.readFileByLines(System.getProperty("user.dir") +
-        // "\\src\\access_" + yesterday + ".log");
-        ParseLog.readFileByLines();
+    public static void main(String[] args) {
+        String fileName = "D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log";
+        List<Accesslog> logList = new ArrayList<>();
+        File file = new File(fileName);
+        BufferedReader reader = null;
+        try {
+            FileReader fileReader = new FileReader(fileName);
+            System.out.println("以行为单位读取文件内容，一次读一整行：");
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "UTF-8");
+            reader = new BufferedReader(isr);
+            String tempString = null;
+            List<AccesslogSpread> list = new ArrayList<AccesslogSpread>();
+            AccesslogSpread al = null;
+            String dayTime = fileName.substring(fileName.length() - 12, fileName.length() - 4);
+            System.out.println("当前时间：" + dayTime);
+            System.out.println(dayFormat.parse(dayTime));
+
+            LineNumberReader l = new LineNumberReader(fileReader);
+            System.out.println(l.getLineNumber());
+        }
+        catch (Exception e) {
+
+        }
+    }
+
+    /**
+     * @param fileName 读取的文件
+     * @param index 开始位置
+     * @param num 读取量
+     * @return
+     */
+    public List<AccesslogSpread> readLine(String fileName, int index, int num) {
+
+        String dayTime = fileName.substring(fileName.length() - 12, fileName.length() - 4);
+        List<AccesslogSpread> list = new ArrayList<>();
+        LineNumberReader reader = null;
+        AccesslogSpread al = null;
+        try {
+            FileReader fileReader = new FileReader(fileName);
+            reader = new LineNumberReader(fileReader);
+            if (index > 0) {
+                reader.skip(index);
+            }
+            while (true) {
+                String tempString = reader.readLine();
+                if (StringUtils.isNotEmpty(tempString)) {
+                    // 获取访问时间的小时数
+                    // 获取当前访问时间的时分秒
+                    if (tempString.contains(baseUrlPrefix)) {
+                        al = new AccesslogSpread();
+                        int timeIndex = tempString.indexOf(":");
+                        String hourse = tempString.substring(timeIndex + 1, timeIndex + 3);
+                        String startTime = hourse + ":00:00";
+                        String endTime = hourse + ":59:59";
+                        // 获取ip地址 根据ip判断pv、uv
+                        int ipindex = tempString.indexOf("-");
+                        String ipaddress = tempString.substring(0, ipindex - 1);
+                        // 获取产品地址
+                        int urlStart = tempString.indexOf(baseUrlPrefix);
+                        int urlEnd = tempString.indexOf("HTTP");
+                        String urladdress = tempString.substring(urlStart, urlEnd);
+                        //访问的商品的id有两位、三位，统一按三位截取，然后两位的去前后空格
+                        urladdress = urladdress.trim();
+                        al.setAccesstime(dayFormat.parse(dayTime));
+                        al.setIp(ipaddress);
+                        al.setStarttime(timeFormat.parse(startTime));
+                        al.setEndtime(timeFormat.parse(endTime));
+                        al.setProductPath(urladdress);
+                        if (tempString.contains(wxNurse114UrlPrefix)) {
+                            al.setPlatformId(2);
+                        }
+                        else {
+                            al.setPlatformId(1);
+
+                        }
+                        list.add(al);
+                    }
+                }
+                if (num == list.size()) {
+                    break;
+                }
+            }
+            reader.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }
