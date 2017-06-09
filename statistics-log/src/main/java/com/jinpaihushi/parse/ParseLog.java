@@ -1,13 +1,8 @@
 package com.jinpaihushi.parse;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
@@ -16,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -64,86 +58,70 @@ public class ParseLog {
      * @throws Exception
      */
     public static void readFileByLines() {
-        //读取文件每次读取文件的1/10
-        // 先获取未解析日志时间
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -1);
         Date time = cal.getTime();
         String yesterday = dayFormat.format(time);
-        // 文件路径
-        // String filePath = "";
-        String fileName = "D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log";
-        File file = new File(fileName);
-        BufferedReader reader = null;
-        try {
-            //定义文件的第一次读取到的大小
-            RandomAccessFile randomFile = new RandomAccessFile(file, "r");
-            randomFile.seek(file.length() / 10);
-            String tmp = null;
-            while ((tmp = randomFile.readLine()) != null) {
-                System.out.println(tmp);
-            }
-            // 以行为单位读取文件内容，一次读一整行
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "UTF-8");
-            reader = new BufferedReader(isr);
-            String tempString = null;
-            // 筛选出的数据
-            List<AccesslogSpread> wxList = new ArrayList<AccesslogSpread>();
-            List<AccesslogSpread> wxNurse114List = new ArrayList<AccesslogSpread>();
-            AccesslogSpread al = null;
-            // 一次读入一行，直到读入null为文件结束
-            while ((tempString = reader.readLine()) != null) {
-                // 获取访问时间的小时数
-                // 获取当前访问时间的时分秒
-                Stream<String> lines = reader.lines();
-                if (tempString.contains(baseUrlPrefix)) {
-                    al = new AccesslogSpread();
-                    int timeIndex = tempString.indexOf(":");
-                    String hourse = tempString.substring(timeIndex + 1, timeIndex + 3);
-                    String startTime = hourse + ":00:00";
-                    String endTime = hourse + ":59:59";
-                    // 获取ip地址 根据ip判断pv、uv
-                    int ipindex = tempString.indexOf("-");
-                    String ipaddress = tempString.substring(0, ipindex - 1);
-                    // 获取产品地址
-                    int urlStart = tempString.indexOf(baseUrlPrefix);
-                    int urlEnd = tempString.indexOf("HTTP");
-                    String urladdress = tempString.substring(urlStart, urlEnd);
-                    //访问的商品的id有两位、三位，统一按三位截取，然后两位的去前后空格
-                    urladdress = urladdress.trim();
-                    al.setAccesstime(dayFormat.parse(yesterday));
-                    al.setIp(ipaddress);
-                    al.setStarttime(timeFormat.parse(startTime));
-                    al.setEndtime(timeFormat.parse(endTime));
-                    al.setProductPath(urladdress);
-                    if (tempString.contains(wxNurse114UrlPrefix)) {
-                        al.setPlatformId(2);
-                        wxNurse114List.add(al);
-                    }
-                    else {
-                        al.setPlatformId(1);
-                        wxList.add(al);
 
+        String fileName = "D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log";
+        try {
+            List<AccesslogSpread> wxList = null;
+            List<AccesslogSpread> wxNurse114List = null;
+            AccesslogSpread al = null;
+            long count = 0;
+            int num = 300;
+            while (true) {
+                List<String> readLine = new ParseLog().readLineB(fileName, num, count);
+                System.out.println(readLine.size());
+                count = Long.parseLong(readLine.get(readLine.size() - 1));
+                if (!readLine.isEmpty()) {
+                    wxList = new ArrayList<AccesslogSpread>();
+                    wxNurse114List = new ArrayList<AccesslogSpread>();
+                    readLine.remove(readLine.size() - 1);
+                    for (int i = 0; i < readLine.size(); i++) {
+                        if (readLine.get(i).contains(baseUrlPrefix)) {
+                            al = new AccesslogSpread();
+                            int timeIndex = readLine.get(i).indexOf(":");
+                            String hourse = readLine.get(i).substring(timeIndex + 1, timeIndex + 3);
+                            String startTime = hourse + ":00:00";
+                            String endTime = hourse + ":59:59";
+                            // 获取ip地址 根据ip判断pv、uv
+                            int ipindex = readLine.get(i).indexOf("-");
+                            String ipaddress = readLine.get(i).substring(0, ipindex - 1);
+                            // 获取产品地址
+                            int urlStart = readLine.get(i).indexOf(baseUrlPrefix);
+                            int urlEnd = readLine.get(i).indexOf("HTTP");
+                            String urladdress = readLine.get(i).substring(urlStart, urlEnd);
+                            //访问的商品的id有两位、三位，统一按三位截取，然后两位的去前后空格
+                            urladdress = urladdress.trim();
+                            al.setAccesstime(dayFormat.parse(yesterday));
+                            al.setIp(ipaddress);
+                            al.setStarttime(timeFormat.parse(startTime));
+                            al.setEndtime(timeFormat.parse(endTime));
+                            al.setProductPath(urladdress);
+                            if (readLine.get(i).contains(wxNurse114UrlPrefix)) {
+                                al.setPlatformId(2);
+                                wxNurse114List.add(al);
+                            }
+                            else {
+                                al.setPlatformId(1);
+                                wxList.add(al);
+
+                            }
+                        }
                     }
+                    extracted(wxList, yesterday);
+                    extracted(wxNurse114List, yesterday);
+                }
+                else {
+                    break;
                 }
             }
-            reader.close();
-            extracted(wxList, yesterday);
-            extracted(wxNurse114List, yesterday);
-
         }
         catch (Exception e) {
-            e.printStackTrace();
+
         }
-        finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                }
-                catch (IOException e1) {
-                }
-            }
-        }
+
     }
 
     private static void extracted(List<AccesslogSpread> list, String dayTime)
@@ -252,82 +230,21 @@ public class ParseLog {
     }
 
     /**
-     * @param fileName 读取的文件
-     * @param index 开始位置
-     * @param num 读取量
+     * @param fileName 读取文件的路径
+     * @param num 读取的行数
+     * @param count 读取文件的起始位置
      * @return
      */
-    public List<AccesslogSpread> readLine(String fileName, int index, int num) {
-
-        String dayTime = fileName.substring(fileName.length() - 12, fileName.length() - 4);
-        List<AccesslogSpread> list = new ArrayList<>();
-        LineNumberReader reader = null;
-        AccesslogSpread al = null;
-        try {
-            FileReader fileReader = new FileReader(fileName);
-            reader = new LineNumberReader(fileReader);
-            if (index > 0) {
-                reader.skip(index);
-            }
-            while (true) {
-                String tempString = reader.readLine();
-                if (StringUtils.isNotEmpty(tempString)) {
-                    // 获取访问时间的小时数
-                    // 获取当前访问时间的时分秒
-                    if (tempString.contains(baseUrlPrefix)) {
-                        al = new AccesslogSpread();
-                        int timeIndex = tempString.indexOf(":");
-                        String hourse = tempString.substring(timeIndex + 1, timeIndex + 3);
-                        String startTime = hourse + ":00:00";
-                        String endTime = hourse + ":59:59";
-                        // 获取ip地址 根据ip判断pv、uv
-                        int ipindex = tempString.indexOf("-");
-                        String ipaddress = tempString.substring(0, ipindex - 1);
-                        // 获取产品地址
-                        int urlStart = tempString.indexOf(baseUrlPrefix);
-                        int urlEnd = tempString.indexOf("HTTP");
-                        String urladdress = tempString.substring(urlStart, urlEnd);
-                        //访问的商品的id有两位、三位，统一按三位截取，然后两位的去前后空格
-                        urladdress = urladdress.trim();
-                        al.setAccesstime(dayFormat.parse(dayTime));
-                        al.setIp(ipaddress);
-                        al.setStarttime(timeFormat.parse(startTime));
-                        al.setEndtime(timeFormat.parse(endTime));
-                        al.setProductPath(urladdress);
-                        if (tempString.contains(wxNurse114UrlPrefix)) {
-                            al.setPlatformId(2);
-                        }
-                        else {
-                            al.setPlatformId(1);
-
-                        }
-                        list.add(al);
-                    }
-                }
-                if (num == list.size()) {
-                    break;
-                }
-            }
-            reader.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
 
     public List<String> readLineB(String fileName, int num, long count) {
-
-        String dayTime = fileName.substring(fileName.length() - 12, fileName.length() - 4);
         List<String> list = new ArrayList<>();
         LineNumberReader reader = null;
-        AccesslogSpread al = null;
         try {
             FileReader fileReader = new FileReader(fileName);
+            //            RandomAccessFile raf = new RandomAccessFile(fileName);
             reader = new LineNumberReader(fileReader);
             if (count > 0) {
                 reader.skip(count);
-                reader.setLineNumber(num);
             }
             while (true) {
 
