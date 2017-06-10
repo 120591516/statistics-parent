@@ -1,9 +1,9 @@
 package StartProvider;
 
-import com.jinpaihushi.parse.ParseLog;
+import com.jinpaihushi.parse.WxParseLog;
 
 public class StartProvider {
     public static void main(String[] args) {
-        ParseLog.readFileByLines();
+        WxParseLog.readFileByLines();
     }
 }

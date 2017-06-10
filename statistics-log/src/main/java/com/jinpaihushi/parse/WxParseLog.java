@@ -28,7 +28,7 @@ import com.jinpaihushi.model.ProductExample;
 import com.jinpaihushi.model.ProductExample.Criteria;
 import com.jinpaihushi.util.MyPredicate;
 
-public class ParseLog {
+public class WxParseLog {
 
     private static SqlSessionFactory factory;
     static {
@@ -71,7 +71,7 @@ public class ParseLog {
             long count = 0;
             int num = 300;
             while (true) {
-                List<String> readLine = new ParseLog().readLineB(fileName, num, count);
+                List<String> readLine = new WxParseLog().readLineB(fileName, num, count);
                 System.out.println(readLine.size());
                 count = Long.parseLong(readLine.get(readLine.size() - 1));
                 if (!readLine.isEmpty()) {
@@ -212,7 +212,7 @@ public class ParseLog {
             long count = 0;
             int num = 300;
             while (true) {
-                List<String> readLine = new ParseLog().readLineB(fileName, num, count);
+                List<String> readLine = new WxParseLog().readLineB(fileName, num, count);
                 System.out.println(readLine.size());
                 count = Long.parseLong(readLine.get(readLine.size() - 1));
                 if (!readLine.isEmpty()) {
