@@ -60,7 +60,7 @@ public class ParseWxLog {
         cal.add(Calendar.DATE, -1);
         Date time = cal.getTime();
         String yesterday = dayFormat.format(time);
-
+        //        D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log
         String fileName = wxPath + "access_" + yesterday + ".log";
         try {
             List<AccesslogSpread> wxList = null;
@@ -259,6 +259,7 @@ public class ParseWxLog {
         }
         catch (Exception e) {
             e.printStackTrace();
+            return list;
         }
         return list;
     }

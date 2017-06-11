@@ -222,6 +222,7 @@ public class Parse114Log {
         }
         catch (Exception e) {
             e.printStackTrace();
+            return list;
         }
         return list;
     }
