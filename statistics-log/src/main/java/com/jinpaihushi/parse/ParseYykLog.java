@@ -105,6 +105,8 @@ public class ParseYykLog {
                     if (readLine.size() < num)
                         break;
                 }
+                if (readLine.size() == 0)
+                    break;
             }
         }
         catch (Exception e) {
@@ -222,7 +224,6 @@ public class ParseYykLog {
         }
         catch (Exception e) {
             e.printStackTrace();
-            return list;
         }
         return list;
     }
