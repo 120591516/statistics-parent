@@ -3,9 +3,7 @@
 <mapper namespace="com.jinpaihushi.mapper.ProductMapper" >
   <resultMap id="BaseResultMap" type="com.jinpaihushi.model.Product" >
     <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="path" property="path" jdbcType="VARCHAR" />
     <result column="name" property="name" jdbcType="VARCHAR" />
-    <result column="product_type" property="productType" jdbcType="INTEGER" />
   </resultMap>
   <sql id="Example_Where_Clause" >
     <where >
@@ -66,7 +64,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List" >
-    id, path, name, product_type
+    id, name
   </sql>
   <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.jinpaihushi.model.ProductExample" >
     select
@@ -99,10 +97,8 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.jinpaihushi.model.Product" >
-    insert into product (id, path, name, 
-      product_type)
-    values (#{id,jdbcType=INTEGER}, #{path,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
-      #{productType,jdbcType=INTEGER})
+    insert into product (id, name)
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.jinpaihushi.model.Product" >
     insert into product
@@ -110,28 +106,16 @@
       <if test="id != null" >
         id,
       </if>
-      <if test="path != null" >
-        path,
-      </if>
       <if test="name != null" >
         name,
-      </if>
-      <if test="productType != null" >
-        product_type,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
         #{id,jdbcType=INTEGER},
       </if>
-      <if test="path != null" >
-        #{path,jdbcType=VARCHAR},
-      </if>
       <if test="name != null" >
         #{name,jdbcType=VARCHAR},
-      </if>
-      <if test="productType != null" >
-        #{productType,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -147,14 +131,8 @@
       <if test="record.id != null" >
         id = #{record.id,jdbcType=INTEGER},
       </if>
-      <if test="record.path != null" >
-        path = #{record.path,jdbcType=VARCHAR},
-      </if>
       <if test="record.name != null" >
         name = #{record.name,jdbcType=VARCHAR},
-      </if>
-      <if test="record.productType != null" >
-        product_type = #{record.productType,jdbcType=INTEGER},
       </if>
     </set>
     <if test="_parameter != null" >
@@ -164,9 +142,7 @@
   <update id="updateByExample" parameterType="map" >
     update product
     set id = #{record.id,jdbcType=INTEGER},
-      path = #{record.path,jdbcType=VARCHAR},
-      name = #{record.name,jdbcType=VARCHAR},
-      product_type = #{record.productType,jdbcType=INTEGER}
+      name = #{record.name,jdbcType=VARCHAR}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -174,23 +150,15 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.jinpaihushi.model.Product" >
     update product
     <set >
-      <if test="path != null" >
-        path = #{path,jdbcType=VARCHAR},
-      </if>
       <if test="name != null" >
         name = #{name,jdbcType=VARCHAR},
-      </if>
-      <if test="productType != null" >
-        product_type = #{productType,jdbcType=INTEGER},
       </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.jinpaihushi.model.Product" >
     update product
-    set path = #{path,jdbcType=VARCHAR},
-      name = #{name,jdbcType=VARCHAR},
-      product_type = #{productType,jdbcType=INTEGER}
+    set name = #{name,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

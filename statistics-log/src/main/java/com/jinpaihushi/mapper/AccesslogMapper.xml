@@ -103,10 +103,10 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.jinpaihushi.model.Accesslog" >
-    insert into accesslog ( product_id, uv, 
+    insert into accesslog (id, product_id, uv, 
       pv, accesstime, startTime, 
       endTime, platform_id)
-    values ( #{productId,jdbcType=INTEGER}, #{uv,jdbcType=INTEGER}, 
+    values (#{id,jdbcType=INTEGER}, #{productId,jdbcType=INTEGER}, #{uv,jdbcType=INTEGER}, 
       #{pv,jdbcType=INTEGER}, #{accesstime,jdbcType=DATE}, #{starttime,jdbcType=TIME}, 
       #{endtime,jdbcType=TIME}, #{platformId,jdbcType=INTEGER})
   </insert>

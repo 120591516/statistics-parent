@@ -1,9 +1,7 @@
 package com.jinpaihushi.parse;
 
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,30 +14,30 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+import com.jinpaihushi.mapper.AccesslogMapper;
+import com.jinpaihushi.mapper.GoodsMapper;
 import com.jinpaihushi.model.Accesslog;
 import com.jinpaihushi.model.AccesslogSpread;
-import com.jinpaihushi.model.Product;
-import com.jinpaihushi.model.ProductExample;
-import com.jinpaihushi.model.ProductExample.Criteria;
+import com.jinpaihushi.model.Goods;
+import com.jinpaihushi.model.GoodsExample;
+import com.jinpaihushi.model.GoodsExample.Criteria;
 import com.jinpaihushi.util.MyPredicate;
 
-public class WxParseLog {
+@Service
+public class ParseWxLog {
 
-    private static SqlSessionFactory factory;
-    static {
-        try {
-            Reader reader = Resources.getResourceAsReader("SqlMapConfig.xml");
-            factory = new SqlSessionFactoryBuilder().build(reader);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    @Autowired
+    private GoodsMapper goodsMapper;
+
+    @Autowired
+    private AccesslogMapper accesslogMapper;
+
+    @Value("${wxPath}")
+    private String wxPath;
 
     private static String baseUrlPrefix = "/ComeIn?m=setOneProductNew&";// 微信服务号平台
 
@@ -57,13 +55,13 @@ public class WxParseLog {
      *            Files\eclipse\workspace\ParseLogTest\src\access_20170604.log
      * @throws Exception
      */
-    public static void readFileByLines() {
+    public void readFileByLines() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -1);
         Date time = cal.getTime();
         String yesterday = dayFormat.format(time);
 
-        String fileName = "D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log";
+        String fileName = wxPath + "access_" + yesterday + ".log";
         try {
             List<AccesslogSpread> wxList = null;
             List<AccesslogSpread> wxNurse114List = null;
@@ -71,15 +69,20 @@ public class WxParseLog {
             long count = 0;
             int num = 300;
             while (true) {
-                List<String> readLine = new WxParseLog().readLineB(fileName, num, count);
-                System.out.println(readLine.size());
-                count = Long.parseLong(readLine.get(readLine.size() - 1));
+                List<String> readLine = new ParseWxLog().readLine(fileName, num, count);
                 if (!readLine.isEmpty()) {
+                    if (readLine.size() > num) {
+                        count = Long.parseLong(readLine.get(readLine.size() - 1));
+                        readLine.remove(readLine.size() - 1);
+                    }
                     wxList = new ArrayList<AccesslogSpread>();
                     wxNurse114List = new ArrayList<AccesslogSpread>();
-                    readLine.remove(readLine.size() - 1);
                     for (int i = 0; i < readLine.size(); i++) {
-                        if (readLine.get(i).contains(baseUrlPrefix)) {
+                        // 获取产品地址
+                        int urlStart = readLine.get(i).indexOf("]");
+                        int urlEnd = readLine.get(i).indexOf("HTTP");
+                        String urladdress = readLine.get(i).substring(urlStart + 6, urlEnd);
+                        if (urladdress.contains(baseUrlPrefix)) {
                             al = new AccesslogSpread();
                             int timeIndex = readLine.get(i).indexOf(":");
                             String hourse = readLine.get(i).substring(timeIndex + 1, timeIndex + 3);
@@ -88,10 +91,6 @@ public class WxParseLog {
                             // 获取ip地址 根据ip判断pv、uv
                             int ipindex = readLine.get(i).indexOf("-");
                             String ipaddress = readLine.get(i).substring(0, ipindex - 1);
-                            // 获取产品地址
-                            int urlStart = readLine.get(i).indexOf(baseUrlPrefix);
-                            int urlEnd = readLine.get(i).indexOf("HTTP");
-                            String urladdress = readLine.get(i).substring(urlStart, urlEnd);
                             //访问的商品的id有两位、三位，统一按三位截取，然后两位的去前后空格
                             urladdress = urladdress.trim();
                             al.setAccesstime(dayFormat.parse(yesterday));
@@ -112,22 +111,20 @@ public class WxParseLog {
                     }
                     extracted(wxList, yesterday);
                     extracted(wxNurse114List, yesterday);
-                }
-                else {
-                    break;
+                    if (readLine.size() < num)
+                        break;
                 }
             }
         }
         catch (Exception e) {
-
+            e.printStackTrace();
         }
 
     }
 
-    private static void extracted(List<AccesslogSpread> list, String dayTime)
+    private void extracted(List<AccesslogSpread> list, String dayTime)
             throws ParseException, IllegalAccessException, InvocationTargetException {
         List<Accesslog> logList = new ArrayList<>();
-        SqlSession openSession = factory.openSession();
         List<AccesslogSpread> allProduct = new ArrayList<>(list);
         // 获取所有访问商品列表
         for (int i = 0; i < allProduct.size(); i++) {
@@ -143,13 +140,11 @@ public class WxParseLog {
             // 根据商品的地址获取商品一天内的访问次数
             Predicate predicate = new MyPredicate("productPath", accesslog2.getProductPath());
             List<AccesslogSpread> select = (List<AccesslogSpread>) CollectionUtils.select(list, predicate);
-            ProductExample productExample = new ProductExample();
-            Criteria productCriteria = productExample.createCriteria();
-            productCriteria.andPathEqualTo(accesslog2.getProductPath());
-            List<Product> product = openSession.selectList("com.jinpaihushi.mapper.ProductMapper.selectByExample",
-                    productExample);
-            if (product.size() > 0) {
-                System.out.println(product.get(0).getId());
+            GoodsExample goodsExample = new GoodsExample();
+            Criteria goodsCriteria = goodsExample.createCriteria();
+            goodsCriteria.andPathEqualTo(accesslog2.getProductPath());
+            List<Goods> goods = goodsMapper.selectByExample(goodsExample);
+            if (goods.size() > 0) {
                 // 获取某一商品的各个时间段
                 List<AccesslogSpread> timeList = new ArrayList<>(select);
                 for (int i = 0; i < timeList.size(); i++) {
@@ -162,7 +157,7 @@ public class WxParseLog {
                 for (AccesslogSpread accesslog3 : timeList) {
                     sourceTime = new Accesslog();
                     BeanUtils.copyProperties(sourceTime, accesslog3);
-                    sourceTime.setProductId(product.get(0).getId());
+                    sourceTime.setProductId(goods.get(0).getId());
                     Predicate pvPredicate = new MyPredicate("starttime", accesslog3.getStarttime());
                     List<AccesslogSpread> pv = (List<AccesslogSpread>) CollectionUtils.select(select, pvPredicate);
                     sourceTime.setPv(pv.size());
@@ -182,7 +177,7 @@ public class WxParseLog {
                 }
                 accesslog = new Accesslog();
                 BeanUtils.copyProperties(accesslog, accesslog2);
-                accesslog.setProductId(product.get(0).getId());
+                accesslog.setProductId(goods.get(0).getId());
                 accesslog.setStarttime(timeFormat.parse("00:00:00"));
                 accesslog.setEndtime(timeFormat.parse("23:59:59"));
                 accesslog.setPv(select.size());
@@ -199,34 +194,35 @@ public class WxParseLog {
         }
         for (Accesslog accesslog1 : logList) {
             // 将数据插入到数据库
-            openSession.insert("com.jinpaihushi.mapper.AccesslogMapper.insert", accesslog1);
+            accesslogMapper.insertSelective(accesslog1);
         }
-        openSession.commit();
-        openSession.close();
     }
 
     public static void main(String[] args) {
+        /*
         String fileName = "D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log";
         try {
-            List<String> tempString = new ArrayList<String>();
-            long count = 0;
-            int num = 300;
-            while (true) {
-                List<String> readLine = new WxParseLog().readLineB(fileName, num, count);
-                System.out.println(readLine.size());
-                count = Long.parseLong(readLine.get(readLine.size() - 1));
-                if (!readLine.isEmpty()) {
-                    readLine.remove(readLine.size() - 1);
-                    tempString.addAll(readLine);
-                }
-                else {
-                    break;
-                }
-            }
+        List<String> tempString = new ArrayList<String>();
+        long count = 0;
+        int num = 300;
+        while (true) {
+        List<String> readLine = new ParseWxLog().readLine(fileName, num, count);
+        System.out.println(readLine.size());
+        count = Long.parseLong(readLine.get(readLine.size() - 1));
+        if (!readLine.isEmpty()) {
+        readLine.remove(readLine.size() - 1);
+        tempString.addAll(readLine);
+        }
+        else {
+        break;
+        }
+        }
         }
         catch (Exception e) {
-
+        
         }
+        */
+        new ParseWxLog().readFileByLines();
     }
 
     /**
@@ -236,7 +232,7 @@ public class WxParseLog {
      * @return
      */
 
-    public List<String> readLineB(String fileName, int num, long count) {
+    public List<String> readLine(String fileName, int num, long count) {
         List<String> list = new ArrayList<>();
         LineNumberReader reader = null;
         try {
@@ -247,16 +243,17 @@ public class WxParseLog {
                 reader.skip(count);
             }
             while (true) {
-
                 String tempString = reader.readLine();
-                count += tempString.length() + 1;
                 if (StringUtils.isNotEmpty(tempString)) {
+                    count += tempString.length() + 1;
                     list.add(tempString);
                 }
                 if (num == list.size()) {
                     list.add(count + "");
                     break;
                 }
+                if (StringUtils.isEmpty(tempString))
+                    break;
             }
             reader.close();
         }

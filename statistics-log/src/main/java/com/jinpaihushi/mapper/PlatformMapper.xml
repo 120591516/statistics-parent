@@ -3,7 +3,6 @@
 <mapper namespace="com.jinpaihushi.mapper.PlatformMapper" >
   <resultMap id="BaseResultMap" type="com.jinpaihushi.model.Platform" >
     <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="prefix" property="prefix" jdbcType="VARCHAR" />
     <result column="name" property="name" jdbcType="VARCHAR" />
   </resultMap>
   <sql id="Example_Where_Clause" >
@@ -65,7 +64,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List" >
-    id, prefix, name
+    id, name
   </sql>
   <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.jinpaihushi.model.PlatformExample" >
     select
@@ -98,19 +97,14 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.jinpaihushi.model.Platform" >
-    insert into platform (id, prefix, name
-      )
-    values (#{id,jdbcType=INTEGER}, #{prefix,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}
-      )
+    insert into platform (id, name)
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.jinpaihushi.model.Platform" >
     insert into platform
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >
         id,
-      </if>
-      <if test="prefix != null" >
-        prefix,
       </if>
       <if test="name != null" >
         name,
@@ -119,9 +113,6 @@
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
         #{id,jdbcType=INTEGER},
-      </if>
-      <if test="prefix != null" >
-        #{prefix,jdbcType=VARCHAR},
       </if>
       <if test="name != null" >
         #{name,jdbcType=VARCHAR},
@@ -140,9 +131,6 @@
       <if test="record.id != null" >
         id = #{record.id,jdbcType=INTEGER},
       </if>
-      <if test="record.prefix != null" >
-        prefix = #{record.prefix,jdbcType=VARCHAR},
-      </if>
       <if test="record.name != null" >
         name = #{record.name,jdbcType=VARCHAR},
       </if>
@@ -154,7 +142,6 @@
   <update id="updateByExample" parameterType="map" >
     update platform
     set id = #{record.id,jdbcType=INTEGER},
-      prefix = #{record.prefix,jdbcType=VARCHAR},
       name = #{record.name,jdbcType=VARCHAR}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
@@ -163,9 +150,6 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.jinpaihushi.model.Platform" >
     update platform
     <set >
-      <if test="prefix != null" >
-        prefix = #{prefix,jdbcType=VARCHAR},
-      </if>
       <if test="name != null" >
         name = #{name,jdbcType=VARCHAR},
       </if>
@@ -174,8 +158,7 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.jinpaihushi.model.Platform" >
     update platform
-    set prefix = #{prefix,jdbcType=VARCHAR},
-      name = #{name,jdbcType=VARCHAR}
+    set name = #{name,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>
