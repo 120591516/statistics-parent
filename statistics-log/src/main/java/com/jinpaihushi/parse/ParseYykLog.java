@@ -27,7 +27,7 @@ import com.jinpaihushi.model.GoodsExample;
 import com.jinpaihushi.model.GoodsExample.Criteria;
 import com.jinpaihushi.util.MyPredicate;
 
-@Service
+@Service(value = "parseYykLog")
 public class ParseYykLog {
 
     @Autowired
