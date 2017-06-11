@@ -59,9 +59,9 @@ public class Parse114Log {
         Date time = cal.getTime();
         String yesterday = dayFormat.format(time);
         String fileName = path + "access_" + yesterday + ".log";
+        List<AccesslogSpread> list = new ArrayList<AccesslogSpread>();
+        ;
         try {
-            List<AccesslogSpread> list = null;
-            List<AccesslogSpread> wxNurse114List = null;
             AccesslogSpread al = null;
             long count = 0;
             int num = 300;
@@ -72,8 +72,6 @@ public class Parse114Log {
                         count = Long.parseLong(readLine.get(readLine.size() - 1));
                         readLine.remove(readLine.size() - 1);
                     }
-                    list = new ArrayList<AccesslogSpread>();
-                    wxNurse114List = new ArrayList<AccesslogSpread>();
                     for (int i = 0; i < readLine.size(); i++) {
                         // 获取产品地址
                         int urlStart = readLine.get(i).indexOf("]");
@@ -100,14 +98,14 @@ public class Parse114Log {
 
                         }
                     }
-                    extracted(list, yesterday);
-                    extracted(wxNurse114List, yesterday);
+
                     if (readLine.size() < num)
                         break;
                 }
                 if (readLine.size() == 0)
                     break;
             }
+            extracted(list, yesterday);
         }
         catch (Exception e) {
             e.printStackTrace();

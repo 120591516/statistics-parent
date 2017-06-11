@@ -62,9 +62,10 @@ public class ParseWxLog {
         String yesterday = dayFormat.format(time);
         //        D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log
         String fileName = wxPath + "access_" + yesterday + ".log";
+        fileName = "D:\\Program Files\\eclipse\\workspace\\br-pro-sqlserver\\src\\main\\java\\access_20170608.log";
+        List<AccesslogSpread> wxList = new ArrayList<AccesslogSpread>();
+        List<AccesslogSpread> wxNurse114List = new ArrayList<AccesslogSpread>();
         try {
-            List<AccesslogSpread> wxList = null;
-            List<AccesslogSpread> wxNurse114List = null;
             AccesslogSpread al = null;
             long count = 0;
             int num = 300;
@@ -75,8 +76,7 @@ public class ParseWxLog {
                         count = Long.parseLong(readLine.get(readLine.size() - 1));
                         readLine.remove(readLine.size() - 1);
                     }
-                    wxList = new ArrayList<AccesslogSpread>();
-                    wxNurse114List = new ArrayList<AccesslogSpread>();
+                    System.out.println(readLine.size());
                     for (int i = 0; i < readLine.size(); i++) {
                         // 获取产品地址
                         int urlStart = readLine.get(i).indexOf("]");
@@ -98,7 +98,9 @@ public class ParseWxLog {
                             al.setStarttime(timeFormat.parse(startTime));
                             al.setEndtime(timeFormat.parse(endTime));
                             al.setProductPath(urladdress);
-                            if (readLine.get(i).contains(wxNurse114UrlPrefix)) {
+                            if (urladdress.contains(wxNurse114UrlPrefix)) {
+                                urladdress = urladdress.substring(11);
+                                al.setProductPath(urladdress);
                                 al.setPlatformId(2);
                                 wxNurse114List.add(al);
                             }
@@ -109,15 +111,16 @@ public class ParseWxLog {
                             }
                         }
                     }
-                    extracted(wxList, yesterday);
-                    System.out.println(wxNurse114List.size());
-                    extracted(wxNurse114List, yesterday);
+
                     if (readLine.size() < num)
                         break;
                 }
                 if (readLine.size() == 0)
                     break;
             }
+            System.out.println(wxList.size());
+            extracted(wxList, yesterday);
+            extracted(wxNurse114List, yesterday);
         }
         catch (Exception e) {
             e.printStackTrace();
