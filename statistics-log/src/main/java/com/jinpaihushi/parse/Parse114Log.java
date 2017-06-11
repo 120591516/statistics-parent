@@ -95,7 +95,7 @@ public class Parse114Log {
                             al.setStarttime(timeFormat.parse(startTime));
                             al.setEndtime(timeFormat.parse(endTime));
                             al.setProductPath(urladdress);
-                            al.setPlatformId(1);
+                            al.setPlatformId(3);
                             list.add(al);
 
                         }

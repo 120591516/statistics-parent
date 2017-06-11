@@ -95,7 +95,7 @@ public class ParseYykLog {
                             al.setStarttime(timeFormat.parse(startTime));
                             al.setEndtime(timeFormat.parse(endTime));
                             al.setProductPath(urladdress);
-                            al.setPlatformId(1);
+                            al.setPlatformId(4);
                             yykList.add(al);
 
                         }

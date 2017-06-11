@@ -110,6 +110,7 @@ public class ParseWxLog {
                         }
                     }
                     extracted(wxList, yesterday);
+                    System.out.println(wxNurse114List.size());
                     extracted(wxNurse114List, yesterday);
                     if (readLine.size() < num)
                         break;
