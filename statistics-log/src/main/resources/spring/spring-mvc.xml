@@ -44,10 +44,10 @@
     </bean>
     
     <!-- 工作的bean -->
-   <!--  <bean id="parseLog" class="jphs.log.service.ParseLogs" /> -->
+    <bean id="parseLog" class="com.jinpaihushi.myjob.MyParseJob" />
     
     <!-- job的配置开始 -->
-    <!-- <bean id="myJobDetail"
+    <bean id="myJobDetail"
         class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="targetObject">
             <ref bean="parseLog" />
@@ -55,29 +55,29 @@
         <property name="targetMethod">
             <value>readFileByLines</value>
         </property>
-    </bean> -->
+    </bean>
     <!-- job的配置结束 -->
         <!-- 调度的配置 -->
-    <!-- <bean id="myJobTrigger"
+    <bean id="myJobTrigger"
         class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail">
             <ref bean="myJobDetail" />
         </property>
         <property name="cronExpression">
             <value>1 * * * * ?</value>
-            <value>0 0 0 * * ?</value>
+            <!-- <value>0 0 0 * * ?</value> -->
         </property>
-    </bean> -->
+    </bean>
     <!-- 调度的配置结束 -->
      
     <!-- 启动触发器的配置开始 -->
-  <!--   <bean name="startQuertz" lazy-init="false" autowire="no"
+    <bean name="startQuertz" lazy-init="false" autowire="no"
         class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
                 <ref bean="myJobTrigger"/>
             </list>
         </property>
-    </bean> -->
+    </bean>
     <!-- 启动触发器的配置结束 -->
 </beans>
