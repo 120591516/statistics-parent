@@ -53,7 +53,7 @@
             <ref bean="parseLog" />
         </property>
         <property name="targetMethod">
-            <value>readFileByLines</value>
+            <value>parseLogJob</value>
         </property>
     </bean>
     <!-- job的配置结束 -->
