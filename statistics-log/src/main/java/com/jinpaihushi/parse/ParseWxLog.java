@@ -62,7 +62,6 @@ public class ParseWxLog {
         String yesterday = dayFormat.format(time);
         //        D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log
         String fileName = wxPath + "access_" + yesterday + ".log";
-        //        fileName = "D:\\Program Files\\eclipse\\workspace\\br-pro-sqlserver\\src\\main\\java\\access_20170608.log";
         List<AccesslogSpread> wxList = new ArrayList<AccesslogSpread>();
         List<AccesslogSpread> wxNurse114List = new ArrayList<AccesslogSpread>();
         try {
@@ -170,8 +169,8 @@ public class ParseWxLog {
                     // 如果时间段的日志数==1说明该时间段有且只有一个ip访问pv、uv值相等
                     // 反之就进行判断
                     if (pv.size() > 1) {
-                        for (int i = 0; i < pv.size() - 1; i++) {
-                            for (int j = 1; j < pv.size(); j++) {
+                        for (int i = 0; i < pv.size(); i++) {
+                            for (int j = pv.size() - 1; j > i; j--) {
                                 if (pv.get(i).getIp().equals(pv.get(j).getIp())) {
                                     pv.remove(j);
                                 }

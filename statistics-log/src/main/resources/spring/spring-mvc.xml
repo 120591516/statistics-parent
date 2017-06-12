@@ -64,8 +64,8 @@
             <ref bean="myJobDetail" />
         </property>
         <property name="cronExpression">
-            <!-- <value>1 * * * * ?</value> -->
-            <value>0 0 0 * * ?</value><!--每天凌晨0点执行  -->
+            <value>1 * * * * ?</value>
+            <!-- <value>0 0 0 * * ?</value> --><!--每天凌晨0点执行  -->
         </property>
     </bean>
     <!-- 调度的配置结束 -->
