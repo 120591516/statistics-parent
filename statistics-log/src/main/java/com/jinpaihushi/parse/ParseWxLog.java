@@ -62,6 +62,7 @@ public class ParseWxLog {
         String yesterday = dayFormat.format(time);
         //        D:/Program Files/eclipse/workspace/br-pro-sqlserver/src/main/java/access_20170604.log
         String fileName = wxPath + "access_" + yesterday + ".log";
+        //        fileName = "D:\\Program Files\\eclipse\\workspace\\br-pro-sqlserver\\src\\main\\java\\access_20170608.log";
         List<AccesslogSpread> wxList = new ArrayList<AccesslogSpread>();
         List<AccesslogSpread> wxNurse114List = new ArrayList<AccesslogSpread>();
         try {

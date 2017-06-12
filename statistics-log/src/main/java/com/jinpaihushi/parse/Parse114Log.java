@@ -60,7 +60,7 @@ public class Parse114Log {
         String yesterday = dayFormat.format(time);
         String fileName = path + "access_" + yesterday + ".log";
         List<AccesslogSpread> list = new ArrayList<AccesslogSpread>();
-        ;
+        //        fileName = "D:\\Program Files\\eclipse\\workspace\\br-pro-sqlserver\\src\\main\\java\\access_20170608.log";
         try {
             AccesslogSpread al = null;
             long count = 0;

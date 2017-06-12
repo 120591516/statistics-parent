@@ -59,6 +59,7 @@ public class ParseYykLog {
         Date time = cal.getTime();
         String yesterday = dayFormat.format(time);
         String fileName = yykPath + "access_" + yesterday + ".log";
+        //        fileName = "D:\\Program Files\\eclipse\\workspace\\br-pro-sqlserver\\src\\main\\java\\access_20170608.log";
         List<AccesslogSpread> yykList = new ArrayList<AccesslogSpread>();
         try {
             AccesslogSpread al = null;
