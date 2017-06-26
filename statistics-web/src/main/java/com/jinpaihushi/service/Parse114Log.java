@@ -1,4 +1,4 @@
-package com.jinpaihushi.parse;
+package com.jinpaihushi.service;
 
 import java.io.FileReader;
 import java.io.LineNumberReader;
@@ -25,19 +25,20 @@ import com.jinpaihushi.model.AccesslogSpread;
 import com.jinpaihushi.model.Goods;
 import com.jinpaihushi.model.GoodsExample;
 import com.jinpaihushi.model.GoodsExample.Criteria;
+import com.jinpaihushi.parse.ParseWxLog;
 import com.jinpaihushi.util.MyPredicate;
 
-@Service(value = "parseYykLog")
-public class ParseYykLog {
+@Service(value = "parse114Log")
+public class Parse114Log {
 
     @Autowired
-    private GoodsMapper goodsMapper;
+    private GoodsMapper goodstMapper;
 
     @Autowired
     private AccesslogMapper accesslogMapper;
 
-    @Value("${yykPath}")
-    private String yykPath;
+    @Value("${114Path}")
+    private String path;
 
     private static String baseUrlPrefix = "/ComeIn?m=setOneProductNew&";
 
@@ -58,10 +59,10 @@ public class ParseYykLog {
         cal.add(Calendar.DATE, -1);
         Date time = cal.getTime();
         String yesterday = dayFormat.format(time);
-        String fileName = yykPath + "access_" + yesterday + ".log";
+        String fileName = path + "access_" + yesterday + ".log";
+        List<AccesslogSpread> list = new ArrayList<AccesslogSpread>();
         //        fileName = "D:\\Program Files\\eclipse\\workspace\\br-pro-sqlserver\\src\\main\\java\\access_20170608.log";
         System.out.println(fileName);
-        List<AccesslogSpread> yykList = new ArrayList<AccesslogSpread>();
         try {
             AccesslogSpread al = null;
             long count = 0;
@@ -94,8 +95,8 @@ public class ParseYykLog {
                             al.setStarttime(timeFormat.parse(startTime));
                             al.setEndtime(timeFormat.parse(endTime));
                             al.setProductPath(urladdress);
-                            al.setPlatformId(4);
-                            yykList.add(al);
+                            al.setPlatformId(3);
+                            list.add(al);
 
                         }
                     }
@@ -106,8 +107,8 @@ public class ParseYykLog {
                 if (readLine.size() == 0)
                     break;
             }
-            System.out.println(yykList.size());
-            extracted(yykList, yesterday);
+            System.out.println(list.size());
+            extracted(list, yesterday);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -136,7 +137,7 @@ public class ParseYykLog {
             GoodsExample goodsExample = new GoodsExample();
             Criteria goodsCriteria = goodsExample.createCriteria();
             goodsCriteria.andPathEqualTo(accesslog2.getProductPath());
-            List<Goods> goods = goodsMapper.selectByExample(goodsExample);
+            List<Goods> goods = goodstMapper.selectByExample(goodsExample);
             if (goods.size() > 0) {
                 // 获取某一商品的各个时间段
                 List<AccesslogSpread> timeList = new ArrayList<>(select);
