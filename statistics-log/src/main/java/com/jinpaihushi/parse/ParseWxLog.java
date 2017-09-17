@@ -82,7 +82,7 @@ public class ParseWxLog {
                         int urlStart = readLine.get(i).indexOf("]");
                         int urlEnd = readLine.get(i).indexOf("HTTP");
                         String urladdress = readLine.get(i).substring(urlStart + 6, urlEnd);
-                        if (urladdress.contains(baseUrlPrefix)) {
+                        if (urladdress.trim().contains(baseUrlPrefix)) {
                             al = new AccesslogSpread();
                             int timeIndex = readLine.get(i).indexOf(":");
                             String hourse = readLine.get(i).substring(timeIndex + 1, timeIndex + 3);
